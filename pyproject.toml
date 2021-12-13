@@ -7,6 +7,8 @@ authors = ["Dan Chalmers <danc@brandwatch.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 pipe = "^1.6.0"
+pytest = "^6.2.5"
+textdistance = {extras = ["DamerauLevenshtein"], version = "^4.2.2"}
 
 [tool.poetry.dev-dependencies]
 
