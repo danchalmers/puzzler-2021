@@ -1,0 +1,2 @@
+AmountNorm = float
+Text = str
