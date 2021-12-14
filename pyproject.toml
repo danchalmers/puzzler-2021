@@ -5,10 +5,11 @@ description = ""
 authors = ["Dan Chalmers <danc@brandwatch.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.11"
 pipe = "^1.6.0"
 pytest = "^6.2.5"
 textdistance = {extras = ["DamerauLevenshtein"], version = "^4.2.2"}
+numpy = "^1.21.4"
 
 [tool.poetry.dev-dependencies]
 

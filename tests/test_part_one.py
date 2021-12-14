@@ -1,5 +1,7 @@
+import time
 
 import pytest
+from pipe import sort
 from textdistance import damerau_levenshtein
 
 from puzzler.scramble import scramble
@@ -14,6 +16,42 @@ and video display interface was uncommon, as most microcomputer kits were then d
 keypad and seven-segment display. To minimize cost, the buyer had to assemble a Nascom by hand-soldering about 3,000
 joints on the single circuit board.
 """,
+"""
+’Twas brillig, and the slithy toves
+      Did gyre and gimble in the wabe:
+All mimsy were the borogoves,
+      And the mome raths outgrabe.
+
+“Beware the Jabberwock, my son!
+      The jaws that bite, the claws that catch!
+Beware the Jubjub bird, and shun
+      The frumious Bandersnatch!”
+
+He took his vorpal sword in hand;
+      Long time the manxome foe he sought—
+So rested he by the Tumtum tree
+      And stood awhile in thought.
+
+And, as in uffish thought he stood,
+      The Jabberwock, with eyes of flame,
+Came whiffling through the tulgey wood,
+      And burbled as it came!
+
+One, two! One, two! And through and through
+      The vorpal blade went snicker-snack!
+He left it dead, and with its head
+      He went galumphing back.
+
+“And hast thou slain the Jabberwock?
+      Come to my arms, my beamish boy!
+O frabjous day! Callooh! Callay!”
+      He chortled in his joy.
+
+’Twas brillig, and the slithy toves
+      Did gyre and gimble in the wabe:
+All mimsy were the borogoves,
+      And the mome raths outgrabe.
+"""
 ]
 
 TEST_A = "A single character word."
@@ -34,11 +72,6 @@ def scrambled_samples_zero_one():
 
 
 @pytest.fixture
-def scrambled_samples_zero_three():
-    return zip(SAMPLE_TEXTS, [scramble(t, 0.3) for t in SAMPLE_TEXTS])
-
-
-@pytest.fixture
 def scrambled_samples_zero_five():
     return zip(SAMPLE_TEXTS, [scramble(t, 0.5) for t in SAMPLE_TEXTS])
 
@@ -51,6 +84,12 @@ def scrambled_samples_one():
 def test_a():
     result = scramble(TEST_A, 0.5).split()
     assert 'A' == result[0]
+
+
+def test_same_letters_present(scrambled_samples_zero_five):
+    for sample in scrambled_samples_zero_five:
+        for word_pair in zip(sample[0].split(), sample[1].split()):
+            assert (word_pair[0] | sort) == (word_pair[1] | sort)
 
 
 def test_apostrophe():
@@ -125,19 +164,30 @@ def test_zero_less_scrambed_than_one(scrambled_samples_zero, scrambled_samples_o
 def test_zero_one_less_scrambed_than_one(scrambled_samples_zero_one, scrambled_samples_one):
     low_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_one]
     high_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_one]
-    for i in range(len(low_distances)):
-        assert low_distances[i] < high_distances[i]
+    total_difference = sum([h - l for l, h in zip(low_distances, high_distances)])
+    assert total_difference > 0
+
+
+def test_zero_one_less_scrambed_than_zero_five(scrambled_samples_zero_one, scrambled_samples_zero_five):
+    low_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_one]
+    high_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_five]
+    total_difference = sum([h - l for l, h in zip(low_distances, high_distances)])
+    assert total_difference > 0
 
 
 def test_zero_five_less_scrambed_than_one(scrambled_samples_zero_five, scrambled_samples_one):
     low_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_five]
     high_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_one]
-    for i in range(len(low_distances)):
-        assert low_distances[i] < high_distances[i]
+    total_difference = sum([h - l for l, h in zip(low_distances, high_distances)])
+    assert total_difference > 0
 
 
-def test_zero_four_less_scrambed_than_zero_five(scrambled_samples_zero_three, scrambled_samples_zero_five):
-    low_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_three]
-    high_distances = [damerau_levenshtein(orig_scrambled[0], orig_scrambled[1]) for orig_scrambled in scrambled_samples_zero_five]
-    for i in range(len(low_distances)):
-        assert low_distances[i] < high_distances[i]
+def test_speed():
+    start = time.time_ns()
+    with open('data/books/84-0.txt', 'r') as f:
+        scrambled = scramble(f.read(), 0.6)
+    end = time.time_ns()
+    time_usec = (end - start) / 1000
+    time_per_word = time_usec / len(scrambled.split())
+    print(f"time per word {time_per_word}us")
+    assert time_per_word < 1.5
