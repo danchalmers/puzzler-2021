@@ -4,6 +4,7 @@ import pytest
 from pipe import sort
 from textdistance import damerau_levenshtein
 
+from puzzler.models import WORD_SPLIT
 from puzzler.scramble import scramble
 
 
@@ -82,18 +83,18 @@ def scrambled_samples_one():
 
 
 def test_a():
-    result = scramble(TEST_A, 0.5).split()
-    assert 'A' == result[0]
+    result = [w for w in WORD_SPLIT.split(scramble(TEST_A, 0.5)) if w.strip()]
+    assert 'A' == result[0], result
 
 
 def test_same_letters_present(scrambled_samples_zero_five):
     for sample in scrambled_samples_zero_five:
-        for word_pair in zip(sample[0].split(), sample[1].split()):
+        for word_pair in zip(WORD_SPLIT.split(sample[0]), WORD_SPLIT.split(sample[1])):
             assert (word_pair[0] | sort) == (word_pair[1] | sort)
 
 
 def test_apostrophe():
-    original_result = zip(TEST_APOSTROPHE.split(), scramble(TEST_APOSTROPHE, 0.5).split())
+    original_result = zip(WORD_SPLIT.split(TEST_APOSTROPHE), WORD_SPLIT.split(scramble(TEST_APOSTROPHE, 0.5)))
     for word in original_result:
         if "'" in word[0]:
             assert "'" in word[1]
@@ -104,7 +105,7 @@ def test_apostrophe():
 
 
 def test_hyphen():
-    original_result = zip(TEST_HYPHEN.split(), scramble(TEST_HYPHEN, 0.5).split())
+    original_result = zip(WORD_SPLIT.split(TEST_HYPHEN), WORD_SPLIT.split(scramble(TEST_HYPHEN, 0.5)))
     for word in original_result:
         if "-" in word[0]:
             assert "-" in word[1]
@@ -115,7 +116,7 @@ def test_hyphen():
 
 
 def test_numbers():
-    original_result = zip(TEST_NUMBERS.split(), scramble(TEST_NUMBERS, 0.5).split())
+    original_result = zip(WORD_SPLIT.split(TEST_NUMBERS), WORD_SPLIT.split(scramble(TEST_NUMBERS, 0.5)))
     for word in original_result:
         if word[0].isnumeric():
             assert word[1] == word[0]
@@ -188,6 +189,6 @@ def test_speed():
         scrambled = scramble(f.read(), 0.6)
     end = time.time_ns()
     time_usec = (end - start) / 1000
-    time_per_word = time_usec / len(scrambled.split())
+    time_per_word = time_usec / len(WORD_SPLIT.split(scrambled))
     print(f"time per word {time_per_word}us")
     assert time_per_word < 1.5
