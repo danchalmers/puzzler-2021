@@ -1,14 +1,11 @@
 import math
-import re
+import sys
 from functools import lru_cache
 from random import choice
 
 from pipe import map
 
-from puzzler.models import Text, AmountNorm, Word
-
-
-WORD_SPLIT = re.compile(r'\b')
+from models import Text, AmountNorm, Word, WORD_SPLIT
 
 
 def _allowed_indicies(word: Word, exclude: int = -1) -> list[int]:
@@ -20,7 +17,7 @@ def n_move_scramble(word: Word, amount: AmountNorm) -> Word:
     if word_size <= 1:
         return word
     indices = list(range(word_size))
-    rounds = math.ceil(len(word) * amount)
+    rounds = math.ceil(len(word) * amount * 0.5)
     for r in range(rounds):
         move_idx = choice(_allowed_indicies(word))
         move_to = choice(_allowed_indicies(word, exclude=move_idx))
@@ -42,3 +39,13 @@ def scramble(text: Text, amount: AmountNorm) -> Text:
         WORD_SPLIT.split(text)
         | map(lambda w: scramble_word(w, amount))
     )
+
+
+if __name__ == "__main__":
+    amount = float(sys.argv[1])
+    from_file_name = sys.argv[2]
+    to_file_name = sys.argv[3]
+    with open(from_file_name, 'r') as from_file:
+        scrambed = scramble(from_file.read(), amount)
+    with open(to_file_name, 'w') as to_file:
+        to_file.write(scrambed)
