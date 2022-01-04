@@ -112,7 +112,7 @@ def test_hyphen():
             parts = zip(word[0].split("-"), word[1].split("-"))
             for part in parts:
                 assert len(part[1]) == len(part[0])
-                assert  set(part[1]) == set(part[0])
+                assert set(part[1]) == set(part[0])
 
 
 def test_numbers():

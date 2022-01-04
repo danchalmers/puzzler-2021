@@ -18,15 +18,22 @@ and each occurrence of a word gets the same scrambling (although capitalization 
 
 To run the scrambler, provide amount, in-file, out-file:
 ```python
-dan@pleiades:~/Code/puzzler-2021$ time poetry run python puzzler/scramble.py 0.5 data/books/84-0.txt test.txt
+$ time poetry run python -m puzzler.scramble 0.5 data/books/84-0.txt test.txt
 
-real	0m0.367s
-user	0m0.336s
-sys	0m0.033s
+real	0m0.391s
+user	0m0.358s
+sys	0m0.032s
 
-$ wc data/books/84-0.txt test.txt
-  7743  78122 448821 data/books/84-0.txt
-  7743  78122 441078 test.txt
- 15486 156244 889899 total
+$ time poetry run python -m puzzler.descramble test.txt test-undo.txt
+
+real	0m1.430s
+user	0m1.361s
+sys	0m0.070s
+
+$ wc data/books/84-0.txt test.txt test-undo.txt
+   7743   78122  448821 data/books/84-0.txt
+   7743   78122  441078 test.txt
+   7743   78122  441008 test-undo.txt
+  23229  234366 1330907 total
 ```
 (The character difference is down to whitespace changes.)
