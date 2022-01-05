@@ -1,15 +1,16 @@
 
 import csv
 import sys
-from collections import defaultdict, Counter
-from functools import lru_cache
+from collections import defaultdict
 from io import TextIOWrapper
 from zipfile import ZipFile
 
 from pipe import sort, map
 
+
 from .models import WORD_SPLIT, ALPHA_RE, Word, Text, WordKey, ScrambledWord, Count, Vocab, ScrambledKeyUse, \
     DecodeLookup
+
 
 WORD_FREQ_FILE = 'data/external/unigram_freq.csv.zip'
 
@@ -53,6 +54,7 @@ def create_decode_lookup(vocab: Vocab, key_use: ScrambledKeyUse) -> DecodeLookup
                 word = part_vocab[1][0]
                 decode_lookup[scrambled] = word
 
+            # Capitalised words need to restart the word frequency lookup
             for part_vocab in zip(
                     sorted({p: c for p, c in part_count.items() if not p.islower()}.items(), key=lambda kv: kv[1], reverse=True),
                     sorted(vocab.get(key, {}).items(), key=lambda kv: kv[1], reverse=True)
@@ -67,7 +69,7 @@ def create_decode_lookup(vocab: Vocab, key_use: ScrambledKeyUse) -> DecodeLookup
 
 
 def descramble_word(decode_lookup: DecodeLookup, word: ScrambledWord) -> Word:
-    decoded_word = decode_lookup.get(word, '???')
+    decoded_word = decode_lookup.get(word, word)
     return decoded_word
 
 
